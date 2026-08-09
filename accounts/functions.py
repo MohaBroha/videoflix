@@ -1,0 +1,51 @@
+from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.conf import settings
+from django.core.mail import send_mail
+from django.urls import reverse
+
+User = get_user_model()
+
+
+def create_activation_token(user):
+    token = default_token_generator.make_token(user)
+    uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+    return uidb64, token
+
+
+def activate_user(uidb64, token):
+    try:
+        user_id = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=user_id)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        return False
+
+    if not default_token_generator.check_token(user, token):
+        return False
+
+    user.is_active = True
+    user.save(update_fields=["is_active"])
+    return True
+
+
+def send_activation_email(user, uidb64, token):
+    activation_path = reverse(
+        "activate",
+        kwargs={"uidb64": uidb64, "token": token},
+    )
+
+    activation_url = f"http://127.0.0.1:8000{activation_path}"
+
+    send_mail(
+        subject="Activate your Videoflix account",
+        message=(
+            "Welcome to Videoflix!\n\n"
+            "Please activate your account using the following link:\n"
+            f"{activation_url}\n\n"
+            "If you did not register for Videoflix, you can ignore this email."
+        ),
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+    )
