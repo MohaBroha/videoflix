@@ -49,3 +49,24 @@ def send_activation_email(user, uidb64, token):
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[user.email],
     )
+
+
+def send_password_reset_email(user, uidb64, token):
+    reset_path = reverse(
+        "password_confirm",
+        kwargs={"uidb64": uidb64, "token": token},
+    )
+
+    reset_url = f"http://127.0.0.1:8000{reset_path}"
+
+    send_mail(
+        subject="Reset your Videoflix password",
+        message=(
+            "You requested a password reset for your Videoflix account.\n\n"
+            "Please reset your password using the following link:\n"
+            f"{reset_url}\n\n"
+            "If you did not request a password reset, you can ignore this email."
+        ),
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+    )
