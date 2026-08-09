@@ -1,13 +1,14 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from accounts.functions import (
     activate_user,
     create_activation_token,
     send_activation_email,
 )
-from .serializers import RegisterSerializer
+from .serializers import RegisterSerializer, LoginSerializer
 
 
 class RegisterView(APIView):
@@ -49,3 +50,39 @@ class ActivateAccountView(APIView):
             {"message": "Invalid activation link."},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+
+class LoginView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = serializer.validated_data["user"]
+        refresh = RefreshToken.for_user(user)
+
+        response = Response(
+            {
+                "detail": "Login successful",
+                "user": {
+                    "id": user.id,
+                    "username": user.email,
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
+
+        response.set_cookie(
+            "access_token",
+            str(refresh.access_token),
+            httponly=True,
+        )
+        response.set_cookie(
+            "refresh_token",
+            str(refresh),
+            httponly=True,
+        )
+
+        return response
