@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "accounts.apps.AccountsConfig",
     "rest_framework_simplejwt.token_blacklist",
+    "videos.apps.VideosConfig",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -114,7 +115,7 @@ DEFAULT_FROM_EMAIL = "noreply@videoflix.local"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "accounts.api.authentication.CookieJWTAuthentication",
     ),
 }
 
