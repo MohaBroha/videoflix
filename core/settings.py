@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     "accounts.apps.AccountsConfig",
     "rest_framework_simplejwt.token_blacklist",
     "videos.apps.VideosConfig",
+    "django_rq",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -59,6 +60,12 @@ CACHES = {
     }
 }
 
+RQ_QUEUES = {
+    "default": {
+        "URL": os.getenv("REDIS_URL"),
+        "DEFAULT_TIMEOUT": 900,
+    },
+}
 
 ROOT_URLCONF = "core.urls"
 
