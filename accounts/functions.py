@@ -10,12 +10,16 @@ User = get_user_model()
 
 
 def create_activation_token(user):
+    """Create a signed activation token and UID for the given user."""
+
     token = default_token_generator.make_token(user)
     uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
     return uidb64, token
 
 
 def activate_user(uidb64, token):
+    """Activate a user when the provided token and UID are valid."""
+
     try:
         user_id = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=user_id)
@@ -31,6 +35,8 @@ def activate_user(uidb64, token):
 
 
 def send_activation_email(user, uidb64, token):
+    """Send the account activation email to the provided user."""
+
     activation_path = reverse(
         "activate",
         kwargs={"uidb64": uidb64, "token": token},
@@ -52,6 +58,8 @@ def send_activation_email(user, uidb64, token):
 
 
 def send_password_reset_email(user, uidb64, token):
+    """Send a password reset email to the provided user."""
+
     reset_path = reverse(
         "password_confirm",
         kwargs={"uidb64": uidb64, "token": token},

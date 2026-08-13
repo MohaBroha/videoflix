@@ -5,6 +5,8 @@ from .models import Video
 
 @admin.register(Video)
 class VideoAdmin(admin.ModelAdmin):
+    """Administrative settings for the video model."""
+
     list_display = (
         "id",
         "title",

@@ -22,10 +22,14 @@ from .serializers import (
 
 
 class RegisterView(APIView):
+    """Register a new user account and send the activation email."""
+
     authentication_classes = []
     permission_classes = []
 
     def post(self, request):
+        """Create the user account and return the generated activation token."""
+
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -46,10 +50,14 @@ class RegisterView(APIView):
 
 
 class ActivateAccountView(APIView):
+    """Activate a user account from an emailed token link."""
+
     authentication_classes = []
     permission_classes = []
 
     def get(self, request, uidb64, token):
+        """Validate the activation link and set the user account to active."""
+
         if activate_user(uidb64, token):
             return Response(
                 {"message": "Account successfully activated."},
@@ -63,10 +71,14 @@ class ActivateAccountView(APIView):
 
 
 class LoginView(APIView):
+    """Authenticate a user and issue JWT cookies for the session."""
+
     authentication_classes = []
     permission_classes = []
 
     def post(self, request):
+        """Validate user credentials and return a successful login response."""
+
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -99,10 +111,14 @@ class LoginView(APIView):
 
 
 class LogoutView(APIView):
+    """Log out a user by invalidating the refresh token and clearing cookies."""
+
     authentication_classes = []
     permission_classes = []
 
     def post(self, request):
+        """Blacklist the refresh token and remove authentication cookies."""
+
         refresh_token = request.COOKIES.get("refresh_token")
 
         if not refresh_token:
@@ -131,10 +147,14 @@ class LogoutView(APIView):
 
 
 class TokenRefreshView(APIView):
+    """Issue a new access token from a valid refresh token in the cookie."""
+
     authentication_classes = []
     permission_classes = []
 
     def post(self, request):
+        """Refresh the JWT access token and return it in the response cookie."""
+
         refresh_token = request.COOKIES.get("refresh_token")
 
         if not refresh_token:
@@ -170,10 +190,14 @@ class TokenRefreshView(APIView):
 
 
 class PasswordResetView(APIView):
+    """Request a password reset link for a registered user."""
+
     authentication_classes = []
     permission_classes = []
 
     def post(self, request):
+        """Send a reset email when the submitted email exists in the system."""
+
         serializer = PasswordResetSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -190,10 +214,14 @@ class PasswordResetView(APIView):
 
 
 class PasswordConfirmView(APIView):
+    """Set a new password from a valid password reset token."""
+
     authentication_classes = []
     permission_classes = []
 
     def post(self, request, uidb64, token):
+        """Validate the reset link and save the new password for the user."""
+
         serializer = PasswordConfirmSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 

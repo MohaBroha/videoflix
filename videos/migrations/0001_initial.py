@@ -4,23 +4,31 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+    """Initial migration for the video model."""
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Video',
+            name="Video",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=255)),
-                ('description', models.TextField()),
-                ('thumbnail', models.ImageField(upload_to='thumbnails/')),
-                ('video_file', models.FileField(upload_to='videos/')),
-                ('category', models.CharField(max_length=100)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("title", models.CharField(max_length=255)),
+                ("description", models.TextField()),
+                ("thumbnail", models.ImageField(upload_to="thumbnails/")),
+                ("video_file", models.FileField(upload_to="videos/")),
+                ("category", models.CharField(max_length=100)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
         ),
     ]

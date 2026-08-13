@@ -5,6 +5,8 @@ from django.conf import settings
 
 
 def convert_video(video_path, video_id):
+    """Convert a source video into HLS manifests for the supported resolutions."""
+
     resolutions = {
         "480p": 480,
         "720p": 720,

@@ -4,15 +4,15 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
+    """Adjust the user manager configuration for the custom model."""
 
     dependencies = [
-        ('accounts', '0001_initial'),
+        ("accounts", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterModelManagers(
-            name='user',
-            managers=[
-            ],
+            name="user",
+            managers=[],
         ),
     ]

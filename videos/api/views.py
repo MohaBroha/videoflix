@@ -11,9 +11,13 @@ from .serializers import VideoSerializer
 
 
 class VideoListView(APIView):
+    """Return the list of videos for authenticated users."""
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        """Fetch all videos and serialize them for the client."""
+
         videos = Video.objects.all()
         serializer = VideoSerializer(videos, many=True)
 
@@ -21,9 +25,13 @@ class VideoListView(APIView):
 
 
 class VideoManifestView(APIView):
+    """Serve the HLS manifest file for a specific video and resolution."""
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request, movie_id, resolution):
+        """Return the manifest for the requested movie and resolution."""
+
         try:
             Video.objects.get(id=movie_id)
         except Video.DoesNotExist:
@@ -53,9 +61,13 @@ class VideoManifestView(APIView):
 
 
 class VideoSegmentView(APIView):
+    """Serve a single video segment from the HLS output directory."""
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request, movie_id, resolution, segment):
+        """Return the requested MPEG-TS segment for the video."""
+
         try:
             Video.objects.get(id=movie_id)
         except Video.DoesNotExist:

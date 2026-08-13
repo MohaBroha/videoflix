@@ -25,12 +25,14 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "videos.apps.VideosConfig",
     "django_rq",
+    "corsheaders",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -38,6 +40,12 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:5501",
+    "http://localhost:5501",
+]
+CORS_ALLOW_CREDENTIALS = True
 
 DATABASES = {
     "default": {
