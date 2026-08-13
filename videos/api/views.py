@@ -50,3 +50,35 @@ class VideoManifestView(APIView):
             open(manifest_path, "rb"),
             content_type="application/vnd.apple.mpegurl",
         )
+
+
+class VideoSegmentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, movie_id, resolution, segment):
+        try:
+            Video.objects.get(id=movie_id)
+        except Video.DoesNotExist:
+            return Response(
+                {"detail": "Video not found."},
+                status=404,
+            )
+
+        segment_path = os.path.join(
+            settings.MEDIA_ROOT,
+            "hls",
+            str(movie_id),
+            resolution,
+            segment,
+        )
+
+        if not os.path.exists(segment_path):
+            return Response(
+                {"detail": "Segment not found."},
+                status=404,
+            )
+
+        return FileResponse(
+            open(segment_path, "rb"),
+            content_type="video/MP2T",
+        )
