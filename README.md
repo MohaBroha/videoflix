@@ -2,13 +2,26 @@
 
 Videoflix is a Django REST Framework backend for a video streaming platform.
 
-The backend provides user authentication, video management, background video processing and authenticated HLS video streaming.
+The backend provides:
 
-Videos are uploaded through the Django Admin Panel. After an upload, the video processing workflow is triggered and the video is converted with FFmpeg into multiple HLS resolutions. Redis and Django RQ are used for background job handling, while PostgreSQL is used as the application database.
+- User registration and authentication
+- JWT-based authentication
+- Django Admin for video management
+- PostgreSQL database
+- Redis
+- Django RQ background jobs
+- FFmpeg video processing
+- HLS streaming
+- 480p, 720p and 1080p video output
+- Docker-based development environment
+- WhiteNoise static file handling
+- CORS support for the provided frontend
+
+Videos are uploaded through the Django Admin Panel. After a video is created, a background job processes the source video with FFmpeg and generates HLS playlists and video segments for multiple resolutions.
 
 ---
 
-## 📑 Table of Contents
+# 📑 Table of Contents
 
 - [Overview](#overview)
 - [Features](#features)
@@ -19,17 +32,14 @@ Videos are uploaded through the Django Admin Panel. After an upload, the video p
 - [Installation](#installation)
   - [1. Clone the Repository](#1-clone-the-repository)
   - [2. Open the Backend Directory](#2-open-the-backend-directory)
-  - [3. Create a Virtual Environment](#3-create-a-virtual-environment)
-  - [4. Activate the Virtual Environment](#4-activate-the-virtual-environment)
-  - [5. Install Python Dependencies](#5-install-python-dependencies)
-  - [6. Configure Environment Variables](#6-configure-environment-variables)
-  - [7. Install and Start Docker Desktop](#7-install-and-start-docker-desktop)
-  - [8. Start PostgreSQL and Redis](#8-start-postgresql-and-redis)
-  - [9. Apply Database Migrations](#9-apply-database-migrations)
-  - [10. Create a Superuser](#10-create-a-superuser)
-  - [11. Install FFmpeg](#11-install-ffmpeg)
-  - [12. Start Django](#12-start-django)
-  - [13. Start the RQ Worker](#13-start-the-rq-worker)
+  - [3. Configure Environment Variables](#3-configure-environment-variables)
+  - [4. Start Docker](#4-start-docker)
+  - [5. Build and Start the Application](#5-build-and-start-the-application)
+  - [6. Apply Database Migrations](#6-apply-database-migrations)
+  - [7. Create a Superuser](#7-create-a-superuser)
+  - [8. Verify Django](#8-verify-django)
+  - [9. Install FFmpeg](#9-install-ffmpeg)
+  - [10. Start the Frontend](#10-start-the-frontend)
 - [Environment Variables](#environment-variables)
 - [Docker Services](#docker-services)
 - [Database](#database)
@@ -38,50 +48,47 @@ Videos are uploaded through the Django Admin Panel. After an upload, the video p
 - [Django Admin](#django-admin)
 - [Authentication](#authentication)
 - [API Endpoints](#api-endpoints)
-  - [Register](#register)
-  - [Login](#login)
-  - [Logout](#logout)
-  - [Refresh Token](#refresh-token)
-  - [Get Videos](#get-videos)
-  - [Get HLS Manifest](#get-hls-manifest)
-  - [Get HLS Segment](#get-hls-segment)
 - [HLS Streaming](#hls-streaming)
-- [Testing with Postman](#testing-with-postman)
-- [Testing the HLS Endpoints](#testing-the-hls-endpoints)
-- [Django Checks and Tests](#django-checks-and-tests)
+- [Frontend Integration](#frontend-integration)
+- [Static and Media Files](#static-and-media-files)
+- [Testing](#testing)
 - [Generated Files](#generated-files)
 - [Troubleshooting](#troubleshooting)
-- [Clean Setup from Scratch](#clean-setup-from-scratch)
 - [Development Workflow](#development-workflow)
-- [Author](#author)
 
 ---
 
-## Overview
+# Overview
 
-Videoflix is a backend application for a video streaming platform built with Django and Django REST Framework.
+Videoflix is a video streaming application built with Django and Django REST Framework.
 
-The application combines several backend technologies:
+The backend combines:
 
-- Django REST Framework provides the REST API.
-- PostgreSQL stores application data.
-- Redis provides the queue backend.
-- Django RQ handles background jobs.
-- FFmpeg processes uploaded videos.
-- HLS is used to provide streamable video content.
-- JWT is used to protect authenticated API endpoints.
+- Django
+- Django REST Framework
+- PostgreSQL
+- Redis
+- Django RQ
+- FFmpeg
+- HLS
+- JWT authentication
+- Docker Compose
 
-Videos are not uploaded through a public REST endpoint. Video management and uploads are handled through the Django Admin Panel.
+Videos are uploaded through Django Admin.
 
-After a video is uploaded and saved, the application queues a background processing job. FFmpeg converts the source video into HLS output for multiple resolutions.
+After the upload is saved, a Django `post_save` signal creates a background processing job. Django RQ uses Redis as its queue backend. The job calls FFmpeg and generates HLS output for:
 
-The generated playlists and video segments can then be requested through authenticated API endpoints.
+- 480p
+- 720p
+- 1080p
+
+The generated HLS playlists and video segments are served through authenticated API endpoints.
 
 ---
 
-## Features
+# Features
 
-### Authentication
+## Authentication
 
 - User registration
 - User login
@@ -89,26 +96,29 @@ The generated playlists and video segments can then be requested through authent
 - JWT authentication
 - Access tokens
 - Refresh tokens
-- JWT token blacklist support
+- JWT token blacklist
+- Cookie-based JWT authentication
 - Protected API endpoints
-- Custom JWT authentication
+- Account activation
+- Password reset flow
 
-### Video Management
+## Video Management
 
 - Video management through Django Admin
 - Video upload through Django Admin
-- Video metadata storage
-- Automatic processing after video creation
+- Video metadata
+- Video thumbnail support
+- Automatic video processing after upload
 
-### Background Processing
+## Background Processing
 
 - Redis integration
 - Django RQ integration
-- Background video processing
-- Queued processing jobs
+- Background processing
+- Queued video conversion
 - FFmpeg conversion
 
-### Video Streaming
+## Video Streaming
 
 - HLS video generation
 - HLS playlist delivery
@@ -120,105 +130,131 @@ The generated playlists and video segments can then be requested through authent
 - `.ts` video segments
 - Authenticated streaming endpoints
 
-### Database
+## Database
 
-- PostgreSQL database
+- PostgreSQL
 - Django migrations
-- Persistent PostgreSQL Docker volume
+- Persistent Docker volume
+
+## Development
+
+- Docker Compose
+- Gunicorn
+- WhiteNoise
+- CORS support
+- Environment-based configuration
 
 ---
 
-## Tech Stack
+# Tech Stack
 
-### Backend
+## Backend
 
 - Python 3.14
 - Django 5.2
 - Django REST Framework
 
-### Authentication
+## Authentication
 
 - djangorestframework-simplejwt
 - JWT access tokens
 - JWT refresh tokens
 - Token blacklist
+- Custom Cookie JWT authentication
 
-### Database
+## Database
 
-- PostgreSQL 17
-- psycopg2
+- PostgreSQL
+- psycopg2-binary
 
-### Queue and Cache
+## Queue and Cache
 
-- Redis 7
+- Redis
 - Django RQ
 - RQ
 - django-redis
 
-### Video Processing
+## Video Processing
 
 - FFmpeg
 - HLS
+- Pillow
 
-### Configuration
+## Configuration
 
 - python-dotenv
 - Environment variables
 
-### Infrastructure
+## Infrastructure
 
-- Docker Desktop
+- Docker
 - Docker Compose
+- Gunicorn
+- WhiteNoise
 
 ---
 
-## Architecture
+# Architecture
 
-The local development environment uses a hybrid setup.
+The current development setup runs the backend inside Docker Compose.
 
-Django runs directly on the host system inside a Python virtual environment.
-
-PostgreSQL and Redis run inside Docker containers.
+The main services are:
 
 ```text
-┌──────────────────────────────────────┐
-│          Local Development           │
-│                                      │
-│  Python Virtual Environment          │
-│                                      │
-│  ┌───────────────────────────────┐   │
-│  │ Django / DRF                  │   │
-│  │ http://127.0.0.1:8000        │   │
-│  └──────────────┬────────────────┘   │
-│                 │                    │
-└─────────────────┼────────────────────┘
-                  │
-          localhost ports
-                  │
-       ┌──────────┴──────────┐
-       │                     │
-       ▼                     ▼
-┌──────────────┐      ┌──────────────┐
-│ PostgreSQL   │      │ Redis        │
-│ Docker       │      │ Docker       │
-│ Port 5432    │      │ Port 6379    │
-└──────────────┘      └──────────────┘
+┌─────────────────────────────────────────────┐
+│              Docker Compose                 │
+│                                             │
+│  ┌───────────────────────────────────────┐  │
+│  │ web                                   │  │
+│  │ Django + Gunicorn                     │  │
+│  │                                       │  │
+│  │ http://127.0.0.1:8000                 │  │
+│  └───────────────┬───────────────────────┘  │
+│                  │                          │
+│        ┌─────────┴─────────┐                │
+│        │                   │                │
+│        ▼                   ▼                │
+│  ┌───────────┐       ┌───────────┐          │
+│  │ PostgreSQL│       │   Redis   │          │
+│  │    db     │       │   redis   │          │
+│  └───────────┘       └───────────┘          │
+│                                             │
+└─────────────────────────────────────────────┘
 ```
 
-Because Django runs outside Docker, the local Django configuration uses:
+The frontend is served separately during local development.
 
-```env
-POSTGRES_HOST=localhost
-REDIS_URL=redis://localhost:6379/1
+The frontend communicates with:
+
+```text
+http://127.0.0.1:8000/api/
 ```
 
-The Docker service names `db` and `redis` would only be used as hostnames by applications running inside the same Docker Compose network.
+The application therefore consists of:
+
+```text
+Frontend
+   │
+   │ HTTP / JSON / HLS
+   ▼
+Django + DRF
+   │
+   ├──────────────► PostgreSQL
+   │
+   └──────────────► Redis / Django RQ
+                         │
+                         ▼
+                       FFmpeg
+                         │
+                         ▼
+                    HLS output
+```
 
 ---
 
-## Video Processing Architecture
+# Video Processing Architecture
 
-The video processing workflow is:
+The complete processing workflow is:
 
 ```text
 Django Admin
@@ -230,10 +266,10 @@ Video Upload
 Video saved
      │
      ▼
-post_save
+post_save signal
      │
      ▼
-Django RQ Queue
+Django RQ
      │
      ▼
 process_video()
@@ -246,135 +282,124 @@ FFmpeg
      ├────────► 720p
      │
      └────────► 1080p
-                    │
-                    ▼
+                  │
+                  ▼
              HLS Generation
-                    │
-             ┌──────┴──────┐
-             │             │
-             ▼             ▼
-        index.m3u8      index0.ts
-             │             │
-             └──────┬──────┘
-                    │
-                    ▼
-             Streaming API
+                  │
+                  ├── index.m3u8
+                  │
+                  └── index0.ts
+                         │
+                         ▼
+                   Streaming API
+                         │
+                         ▼
+                     Frontend
+```
+
+The video processing code is located in:
+
+```text
+videos/functions.py
+```
+
+The background job is located in:
+
+```text
+videos/tasks.py
 ```
 
 ---
 
-## Project Structure
+# Project Structure
 
 ```text
 videoflix/
 │
-└── backend/
-    │
-    ├── accounts/
-    │   ├── api/
-    │   │   └── authentication.py
-    │   │
-    │   ├── migrations/
-    │   ├── admin.py
-    │   ├── apps.py
-    │   ├── models.py
-    │   └── ...
-    │
-    ├── videos/
-    │   ├── api/
-    │   │   ├── serializers.py
-    │   │   ├── urls.py
-    │   │   └── views.py
-    │   │
-    │   ├── migrations/
-    │   ├── admin.py
-    │   ├── apps.py
-    │   ├── functions.py
-    │   ├── models.py
-    │   ├── tasks.py
-    │   └── ...
-    │
-    ├── core/
-    │   ├── settings.py
-    │   ├── urls.py
-    │   ├── asgi.py
-    │   └── wsgi.py
-    │
-    ├── hls/
-    ├── media/
-    ├── static/
-    ├── thumbnails/
-    │
-    ├── .env
-    ├── .env.example
-    ├── .gitignore
-    ├── docker-compose.yml
-    ├── Dockerfile
-    ├── manage.py
-    ├── README.md
-    └── requirements.txt
+├── backend/
+│   │
+│   ├── accounts/
+│   │   ├── api/
+│   │   │   ├── authentication.py
+│   │   │   ├── serializers.py
+│   │   │   ├── urls.py
+│   │   │   └── views.py
+│   │   ├── migrations/
+│   │   ├── admin.py
+│   │   ├── apps.py
+│   │   ├── models.py
+│   │   └── ...
+│   │
+│   ├── videos/
+│   │   ├── api/
+│   │   │   ├── serializers.py
+│   │   │   ├── urls.py
+│   │   │   └── views.py
+│   │   ├── migrations/
+│   │   ├── admin.py
+│   │   ├── apps.py
+│   │   ├── functions.py
+│   │   ├── models.py
+│   │   ├── tasks.py
+│   │   └── ...
+│   │
+│   ├── core/
+│   │   ├── settings.py
+│   │   ├── urls.py
+│   │   ├── asgi.py
+│   │   └── wsgi.py
+│   │
+│   ├── media/
+│   ├── static/
+│   │
+│   ├── .env
+│   ├── .env.template
+│   ├── .gitignore
+│   ├── docker-compose.yml
+│   ├── Dockerfile
+│   ├── manage.py
+│   ├── README.md
+│   └── requirements.txt
+│
+└── frontend/
+    ├── pages/
+    ├── shared/
+    ├── assets/
+    └── ...
 ```
 
-> The current Dockerfile is not used for the local development setup. Django runs locally in the Python virtual environment, while PostgreSQL and Redis run through Docker Compose.
+Generated media and HLS files should not be committed to Git.
 
 ---
 
-## Requirements
+# Requirements
 
-Before cloning and running the project, install the following software.
-
-### Required Software
+Before running the project, install:
 
 - Git
-- Python 3.14 or newer
-- pip
+- Python 3.14
 - Docker Desktop
 - Docker Compose
 - FFmpeg
 
-### Check Git
+Check Python:
 
-```bash
-git --version
-```
-
-### Check Python
-
-```bash
+```powershell
 python --version
 ```
 
-On Linux or macOS you may need:
+Check Docker:
 
-```bash
-python3 --version
-```
-
-### Check pip
-
-```bash
-pip --version
-```
-
-### Check Docker
-
-```bash
+```powershell
 docker --version
-```
-
-### Check Docker Compose
-
-```bash
 docker compose version
 ```
 
-### Check FFmpeg
+Check FFmpeg:
 
-```bash
+```powershell
 ffmpeg -version
 ```
-
-All required software should be available before continuing with the installation.
 
 ---
 
@@ -382,13 +407,13 @@ All required software should be available before continuing with the installatio
 
 ## 1. Clone the Repository
 
-Clone the repository:
+Clone the project:
 
 ```bash
 git clone <YOUR_REPOSITORY_URL>
 ```
 
-Enter the cloned project:
+Enter the project:
 
 ```bash
 cd videoflix
@@ -398,332 +423,253 @@ cd videoflix
 
 ## 2. Open the Backend Directory
 
-Enter the Django backend:
-
 ```bash
 cd backend
 ```
 
-All commands in the following installation steps should be executed from the `backend` directory unless stated otherwise.
+All backend commands should be executed from this directory unless stated otherwise.
 
 ---
 
-## 3. Create a Virtual Environment
+## 3. Configure Environment Variables
 
-A Python virtual environment keeps the project dependencies isolated from the global Python installation.
-
-### Windows PowerShell / CMD
-
-```powershell
-python -m venv venv
-```
-
-### Linux / macOS
-
-```bash
-python3 -m venv venv
-```
-
-A new directory called `venv` will be created.
-
----
-
-## 4. Activate the Virtual Environment
+Create the local environment file from the example:
 
 ### Windows PowerShell
 
 ```powershell
-venv\Scripts\activate
-```
-
-### Windows CMD
-
-```cmd
-venv\Scripts\activate.bat
+Copy-Item .env.template .env
 ```
 
 ### Linux / macOS
 
 ```bash
-source venv/bin/activate
+cp .env.template .env
 ```
 
-After activation, the terminal should show `(venv)`.
+The real `.env` file contains local configuration and secrets.
 
-Example:
+It must not be committed to Git.
 
-```text
-(venv) PS C:\...\videoflix\backend>
-```
-
-The virtual environment must be activated whenever Django commands are executed.
+The `.env.template` file contains placeholders and should be committed.
 
 ---
 
-## 5. Install Python Dependencies
+# Environment Variables
 
-Install all dependencies from `requirements.txt`:
+The backend uses environment variables for configuration.
 
-```bash
-pip install -r requirements.txt
+The important variables are:
+
+```env
+SECRET_KEY=your-secret-key
+DEBUG=True
+
+DB_NAME=videoflix_db
+DB_USER=videoflix_user
+DB_PASSWORD=your-secure-password
+DB_HOST=db
+DB_PORT=5432
+
+REDIS_LOCATION=redis://redis:6379/1
+
+ALLOWED_HOSTS=localhost,127.0.0.1
+CSRF_TRUSTED_ORIGINS=http://localhost:5500,http://127.0.0.1:5500
 ```
 
-After installation, verify that Django can load the project:
+The values above are examples.
 
-```bash
-python manage.py check
-```
+Do not commit real secrets.
 
-At this stage, database-related operations may still require PostgreSQL to be started first.
+The Django settings load the `.env` file with `python-dotenv`.
 
 ---
 
-## 6. Configure Environment Variables
+# 4. Start Docker
 
-The repository contains:
+Make sure Docker Desktop is running.
 
-```text
-.env.example
-```
-
-The real `.env` file is intentionally not committed because it contains environment-specific configuration and secrets.
-
-Create `.env` from `.env.example`.
-
-### Windows PowerShell
+Check:
 
 ```powershell
-Copy-Item .env.example .env
-```
-
-### Windows CMD
-
-```cmd
-copy .env.example .env
-```
-
-### Linux / macOS
-
-```bash
-cp .env.example .env
-```
-
-Open `.env`.
-
-For the current local development architecture it should use:
-
-```env
-POSTGRES_DB=videoflix
-POSTGRES_USER=videoflix
-POSTGRES_PASSWORD=your-secure-password
-
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
-
-REDIS_URL=redis://localhost:6379/1
-
-SECRET_KEY=your-django-secret-key
-DEBUG=True
-```
-
-### POSTGRES_DB
-
-```env
-POSTGRES_DB=videoflix
-```
-
-Defines the PostgreSQL database name.
-
-### POSTGRES_USER
-
-```env
-POSTGRES_USER=videoflix
-```
-
-Defines the PostgreSQL user.
-
-### POSTGRES_PASSWORD
-
-```env
-POSTGRES_PASSWORD=your-secure-password
-```
-
-Choose your own password.
-
-Docker Compose uses this value when creating PostgreSQL and Django uses the same value when connecting to PostgreSQL.
-
-### POSTGRES_HOST
-
-Because Django runs locally and PostgreSQL exposes port `5432` from Docker:
-
-```env
-POSTGRES_HOST=localhost
-```
-
-### POSTGRES_PORT
-
-```env
-POSTGRES_PORT=5432
-```
-
-### REDIS_URL
-
-Because Django runs locally and Redis exposes port `6379` from Docker:
-
-```env
-REDIS_URL=redis://localhost:6379/1
-```
-
-### SECRET_KEY
-
-Set a private Django secret key:
-
-```env
-SECRET_KEY=your-django-secret-key
-```
-
-Do not use the example value in production.
-
-### DEBUG
-
-For local development:
-
-```env
-DEBUG=True
-```
-
-### Important Security Note
-
-Never commit the real `.env` file.
-
-Only `.env.example` should be committed.
-
----
-
-## 7. Install and Start Docker Desktop
-
-PostgreSQL and Redis run through Docker Compose.
-
-Start Docker Desktop before continuing.
-
-Verify that Docker is running:
-
-```bash
 docker ps
 ```
 
-If Docker is working, the command should execute without a connection error.
-
 ---
 
-## 8. Start PostgreSQL and Redis
+# 5. Build and Start the Application
 
-The project contains a `docker-compose.yml`.
+Build the backend image and start all services:
 
-It defines two services:
+```powershell
+docker compose up --build -d
+```
+
+Check the services:
+
+```powershell
+docker compose ps
+```
+
+The application should contain the following services:
 
 ```text
+web
 db
 redis
 ```
 
-Start the services:
-
-```bash
-docker compose up -d
-```
-
-The `-d` option starts the containers in the background.
-
-Check the containers:
-
-```bash
-docker ps
-```
-
-You should see:
+The backend is exposed on:
 
 ```text
-videoflix_db
-videoflix_redis
+http://127.0.0.1:8000/
 ```
 
-### PostgreSQL
-
-PostgreSQL is exposed on:
+The API is available under:
 
 ```text
-localhost:5432
+http://127.0.0.1:8000/api/
 ```
-
-### Redis
-
-Redis is exposed on:
-
-```text
-localhost:6379
-```
-
-### Check Docker Compose Status
-
-```bash
-docker compose ps
-```
-
-### Stop the Services
-
-```bash
-docker compose down
-```
-
-### Start the Services Again
-
-```bash
-docker compose up -d
-```
-
-### Important
-
-Do not use:
-
-```bash
-docker compose down -v
-```
-
-unless you intentionally want to delete the PostgreSQL and Redis volumes.
-
-The `-v` option removes the persistent volumes and therefore deletes stored local database data.
 
 ---
 
-## 9. Apply Database Migrations
+# Docker Services
 
-After PostgreSQL is running:
+## Web
 
-```bash
-python manage.py migrate
+The `web` service runs the Django backend using Gunicorn.
+
+It is exposed on:
+
+```text
+127.0.0.1:8000
 ```
 
-This creates the required database tables.
+## PostgreSQL
 
-The project includes Django migrations for applications including:
+PostgreSQL is used as the application database.
 
-- accounts
-- admin
-- auth
-- contenttypes
-- django_rq
-- sessions
-- token_blacklist
-- videos
+The Docker service is:
 
-After migrations, run:
-
-```bash
-python manage.py check
+```text
+db
 ```
 
-Expected output:
+## Redis
+
+Redis is used by:
+
+- Django RQ
+- Background processing
+- Django cache
+
+The Docker service is:
+
+```text
+redis
+```
+
+---
+
+# Useful Docker Commands
+
+Start the application:
+
+```powershell
+docker compose up -d
+```
+
+Rebuild the application:
+
+```powershell
+docker compose up --build -d
+```
+
+Stop the application:
+
+```powershell
+docker compose down
+```
+
+Check services:
+
+```powershell
+docker compose ps
+```
+
+View backend logs:
+
+```powershell
+docker compose logs web
+```
+
+Follow backend logs:
+
+```powershell
+docker compose logs -f web
+```
+
+View the last 100 lines:
+
+```powershell
+docker compose logs web --tail=100
+```
+
+Open a shell inside the backend container:
+
+```powershell
+docker compose exec web bash
+```
+
+---
+
+# 6. Apply Database Migrations
+
+Run:
+
+```powershell
+docker compose exec web python manage.py migrate
+```
+
+This creates the required Django database tables.
+
+Check migrations:
+
+```powershell
+docker compose exec web python manage.py showmigrations
+```
+
+---
+
+# 7. Create a Superuser
+
+Create a Django administrator:
+
+```powershell
+docker compose exec web python manage.py createsuperuser
+```
+
+Follow the prompts.
+
+The superuser is required to access:
+
+```text
+http://127.0.0.1:8000/admin/
+```
+
+A normal Videoflix user account is not automatically a Django Admin user.
+
+---
+
+# 8. Verify Django
+
+Run:
+
+```powershell
+docker compose exec web python manage.py check
+```
+
+Expected result:
 
 ```text
 System check identified no issues (0 silenced).
@@ -731,451 +677,161 @@ System check identified no issues (0 silenced).
 
 ---
 
-## 10. Create a Superuser
+# 9. Install FFmpeg
 
-Create an administrator account:
+FFmpeg is not installed through `requirements.txt`.
 
-```bash
-python manage.py createsuperuser
-```
+It must be available to the environment where the video processing job runs.
 
-Follow the prompts.
-
-The superuser is required to access Django Admin and upload/manage videos.
-
----
-
-## 11. Install FFmpeg
-
-FFmpeg is not a Python package and is therefore not installed through `requirements.txt`.
-
-It must be installed separately on the operating system.
-
-### Windows
-
-Install FFmpeg and add its `bin` directory to the Windows PATH environment variable.
-
-After installation, close and reopen the terminal.
-
-Verify:
+Check:
 
 ```powershell
 ffmpeg -version
 ```
 
-The command must print FFmpeg version information.
-
-If PowerShell reports that `ffmpeg` is not recognized, FFmpeg is either not installed or its `bin` directory is missing from PATH.
-
-### Ubuntu / Debian
-
-```bash
-sudo apt update
-sudo apt install ffmpeg
-```
-
-Verify:
-
-```bash
-ffmpeg -version
-```
-
-### macOS
-
-If Homebrew is installed:
-
-```bash
-brew install ffmpeg
-```
-
-Verify:
-
-```bash
-ffmpeg -version
-```
-
-FFmpeg must be available before uploaded videos can be processed.
+If FFmpeg is unavailable, install it and make sure its `bin` directory is available through `PATH`.
 
 ---
 
-## 12. Start Django
+# 10. Start the Frontend
 
-Make sure:
+The Academy frontend is a separate static frontend.
 
-- the virtual environment is activated
-- `.env` exists
-- Docker Desktop is running
-- PostgreSQL is running
-- Redis is running
-- migrations have been applied
+Start the frontend with a local static server.
 
-Start Django:
+The frontend API configuration points to:
 
-```bash
-python manage.py runserver
+```javascript
+const API_BASE_URL = 'http://127.0.0.1:8000/api/';
 ```
 
-Expected output includes:
+The frontend therefore communicates with the Dockerized backend.
+
+The frontend must be opened through its local web server rather than directly through the filesystem.
+
+Example:
 
 ```text
-Starting development server at http://127.0.0.1:8000/
+http://127.0.0.1:5500/
 ```
-
-Open:
-
-```text
-http://127.0.0.1:8000/
-```
-
-Django Admin:
-
-```text
-http://127.0.0.1:8000/admin/
-```
-
-Stop the development server with:
-
-```text
-CTRL + C
-```
-
-or the appropriate terminal interrupt command.
-
----
-
-## 13. Start the RQ Worker
-
-Video processing jobs are queued through Django RQ.
-
-The worker must run separately from the Django development server.
-
-Open a **second terminal**.
-
-Enter the backend directory:
-
-```bash
-cd videoflix/backend
-```
-
-Activate the virtual environment.
-
-### Windows
-
-```powershell
-venv\Scripts\activate
-```
-
-### Linux / macOS
-
-```bash
-source venv/bin/activate
-```
-
-Start the default queue worker:
-
-```bash
-python manage.py rqworker default
-```
-
-The worker listens for video processing jobs.
-
-### Recommended Development Terminals
-
-A normal development setup therefore uses:
-
-```text
-Terminal 1
-──────────
-python manage.py runserver
-
-
-Terminal 2
-──────────
-python manage.py rqworker default
-
-
-Docker Desktop
-──────────────
-PostgreSQL
-Redis
-```
-
-### Windows RQ Limitation
-
-The project can enqueue RQ jobs on Windows, but some RQ worker implementations rely on Unix-specific process functionality.
-
-A Windows worker may produce errors such as:
-
-```text
-AttributeError: module 'os' has no attribute 'wait4'
-```
-
-This is an RQ/Windows process compatibility issue.
-
-For reliable background processing, especially in production, run the RQ worker in a Linux environment.
-
----
-
-# Environment Variables
-
-The Django settings load `.env` using `python-dotenv`.
-
-The following environment variables are required:
-
-| Variable | Purpose | Local Example |
-|---|---|---|
-| `SECRET_KEY` | Django secret key | `your-secret-key` |
-| `DEBUG` | Django debug mode | `True` |
-| `POSTGRES_DB` | PostgreSQL database | `videoflix` |
-| `POSTGRES_USER` | PostgreSQL user | `videoflix` |
-| `POSTGRES_PASSWORD` | PostgreSQL password | `your-secure-password` |
-| `POSTGRES_HOST` | PostgreSQL hostname | `localhost` |
-| `POSTGRES_PORT` | PostgreSQL port | `5432` |
-| `REDIS_URL` | Redis connection | `redis://localhost:6379/1` |
-
-The `.env.example` should therefore contain:
-
-```env
-POSTGRES_DB=videoflix
-POSTGRES_USER=videoflix
-POSTGRES_PASSWORD=
-
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
-
-REDIS_URL=redis://localhost:6379/1
-
-SECRET_KEY=
-DEBUG=True
-```
-
-The empty values are intentional placeholders.
-
-A developer cloning the repository creates `.env` from this template and fills in the required secrets.
-
----
-
-# Docker Services
-
-The Docker Compose configuration provides PostgreSQL and Redis.
-
-## PostgreSQL Service
-
-Image:
-
-```text
-postgres:17
-```
-
-Container:
-
-```text
-videoflix_db
-```
-
-Port:
-
-```text
-5432:5432
-```
-
-Persistent volume:
-
-```text
-postgres_data
-```
-
-## Redis Service
-
-Image:
-
-```text
-redis:7-alpine
-```
-
-Container:
-
-```text
-videoflix_redis
-```
-
-Port:
-
-```text
-6379:6379
-```
-
-Persistent volume:
-
-```text
-redis_data
-```
-
-## Show Running Containers
-
-```bash
-docker ps
-```
-
-## Show Compose Services
-
-```bash
-docker compose ps
-```
-
-## View PostgreSQL Logs
-
-```bash
-docker logs videoflix_db
-```
-
-## View Redis Logs
-
-```bash
-docker logs videoflix_redis
-```
-
----
-
-# Database
-
-Videoflix uses PostgreSQL.
-
-Django reads the database configuration from `.env`.
-
-The configuration corresponds to:
-
-```text
-Database: PostgreSQL
-Host: localhost
-Port: 5432
-Database name: POSTGRES_DB
-Username: POSTGRES_USER
-Password: POSTGRES_PASSWORD
-```
-
-Apply migrations after starting PostgreSQL:
-
-```bash
-python manage.py migrate
-```
-
-Check migration status:
-
-```bash
-python manage.py showmigrations
-```
-
----
-
-# Redis and Django RQ
-
-Redis is used by:
-
-- Django cache configuration
-- Django RQ
-- Background video processing jobs
-
-The local Redis URL is:
-
-```env
-REDIS_URL=redis://localhost:6379/1
-```
-
-Django RQ uses the `default` queue.
-
-The configured default job timeout is:
-
-```text
-900 seconds
-```
-
-The processing task is located in:
-
-```text
-videos/tasks.py
-```
-
-The FFmpeg processing logic is located in:
-
-```text
-videos/functions.py
-```
-
----
-
-# FFmpeg and Video Processing
-
-FFmpeg processes uploaded videos and generates HLS output.
-
-Supported output resolutions are:
-
-- 480p
-- 720p
-- 1080p
-
-The generated directory structure follows the movie ID.
-
-Example for movie ID `3`:
-
-```text
-hls/
-└── 3/
-    ├── 480p/
-    │   ├── index.m3u8
-    │   └── index0.ts
-    │
-    ├── 720p/
-    │   ├── index.m3u8
-    │   └── index0.ts
-    │
-    └── 1080p/
-        ├── index.m3u8
-        └── index0.ts
-```
-
-Depending on video duration, HLS output may contain multiple `.ts` segment files.
-
-The `.m3u8` file is the HLS playlist.
-
-The `.ts` files contain the actual video segments.
 
 ---
 
 # Django Admin
 
-Video uploads are handled through Django Admin.
-
-Start Django:
-
-```bash
-python manage.py runserver
-```
-
 Open:
 
 ```text
 http://127.0.0.1:8000/admin/
 ```
 
-Log in using the superuser created during installation.
+Login using the Django superuser.
 
-From the Video administration section, create/upload a video.
+The Django Admin is used to:
 
-After the video is saved:
+- create videos
+- upload video files
+- edit video metadata
+- manage users
+- manage application data
+
+After saving a video, the background processing pipeline starts automatically.
+
+---
+
+# Video Processing
+
+Videos are uploaded through Django Admin.
+
+After the model is saved, the `post_save` signal triggers the background task.
+
+The task calls:
 
 ```text
-Video saved
-     ↓
+videos.tasks.process_video()
+```
+
+The actual FFmpeg conversion is implemented in:
+
+```text
+videos.functions.convert_video()
+```
+
+The supported resolutions are:
+
+```text
+480p
+720p
+1080p
+```
+
+For a video with ID `1`, the generated structure is:
+
+```text
+media/
+└── hls/
+    └── 1/
+        ├── 480p/
+        │   ├── index.m3u8
+        │   └── index0.ts
+        │
+        ├── 720p/
+        │   ├── index.m3u8
+        │   └── index0.ts
+        │
+        └── 1080p/
+            ├── index.m3u8
+            └── index0.ts
+```
+
+Longer videos may contain multiple `.ts` segment files.
+
+---
+
+# Redis and Django RQ
+
+Redis is used as the queue backend for Django RQ.
+
+The default queue is:
+
+```text
+default
+```
+
+The configured default timeout is:
+
+```text
+900 seconds
+```
+
+The processing task is:
+
+```text
+videos/tasks.py
+```
+
+The FFmpeg logic is:
+
+```text
+videos/functions.py
+```
+
+The workflow is:
+
+```text
+Video
+  ↓
 post_save
-     ↓
-Job added to RQ queue
-     ↓
-RQ worker receives job
-     ↓
+  ↓
+RQ job
+  ↓
+Redis
+  ↓
 process_video()
-     ↓
-FFmpeg generates HLS
+  ↓
+FFmpeg
+  ↓
+HLS
 ```
 
 ---
@@ -1184,51 +840,25 @@ FFmpeg generates HLS
 
 Videoflix uses JWT authentication.
 
-The configured authentication class is:
+The project uses a custom authentication class:
 
 ```text
 accounts.api.authentication.CookieJWTAuthentication
 ```
 
-The project uses:
+Authentication supports:
 
-- Access token
-- Refresh token
+- Access tokens
+- Refresh tokens
 - Token blacklist
+- Cookie-based authentication
 
-## Token Lifetimes
-
-Access token:
-
-```text
-30 minutes
-```
-
-Refresh token:
+Configured token lifetimes:
 
 ```text
-7 days
+Access token: 30 minutes
+Refresh token: 7 days
 ```
-
-## Bearer Authentication
-
-When testing an authenticated endpoint with a bearer token:
-
-```http
-Authorization: Bearer <ACCESS_TOKEN>
-```
-
-Use the **access token**, not the refresh token.
-
-Example:
-
-```text
-Authorization
-Type: Bearer Token
-Token: <ACCESS_TOKEN>
-```
-
-If an access token has expired, log in again or use the configured refresh flow to obtain a new access token.
 
 ---
 
@@ -1242,6 +872,17 @@ POST /api/register/
 
 Creates a new user account.
 
+Example request:
+
+```json
+{
+    "email": "user@example.com",
+    "password": "test12345",
+    "confirmed_password": "test12345",
+    "privacy_policy": "on"
+}
+```
+
 ---
 
 ## Login
@@ -1252,7 +893,7 @@ POST /api/login/
 
 Authenticates a user.
 
-The login endpoint provides the authentication information required for subsequent protected requests.
+The frontend uses this endpoint for login.
 
 ---
 
@@ -1272,7 +913,7 @@ Logs out the authenticated user.
 POST /api/token/refresh/
 ```
 
-Used to obtain a new access token through the refresh flow.
+Refreshes authentication using the configured JWT refresh flow.
 
 ---
 
@@ -1284,50 +925,33 @@ GET /api/video/
 
 Returns the available videos.
 
-### Authentication
-
-JWT authentication is required.
-
-### Success
-
-```text
-200 OK
-```
-
-### Example
-
-```text
-http://127.0.0.1:8000/api/video/
-```
+Authentication is required.
 
 ---
 
 ## Get HLS Manifest
 
 ```http
-GET /api/video/<int:movie_id>/<str:resolution>/index.m3u8
+GET /api/video/<movie_id>/<resolution>/index.m3u8
 ```
 
-Returns the HLS playlist for a specific movie and resolution.
-
-### URL Parameters
-
-| Parameter | Description |
-|---|---|
-| `movie_id` | ID of the movie |
-| `resolution` | Requested resolution such as `480p`, `720p` or `1080p` |
-
-### Example
+Example:
 
 ```http
-GET /api/video/3/480p/index.m3u8
+GET /api/video/1/480p/index.m3u8
 ```
 
-### Authentication
+Supported resolutions:
 
-JWT authentication is required.
+```text
+480p
+720p
+1080p
+```
 
-### Success Response
+Authentication is required.
+
+Expected response:
 
 ```text
 200 OK
@@ -1339,45 +963,21 @@ Content type:
 application/vnd.apple.mpegurl
 ```
 
-The response body contains the HLS manifest in M3U8 format.
-
-### Error Response
-
-```text
-404 Not Found
-```
-
-Returned if the requested video or manifest does not exist.
-
 ---
 
 ## Get HLS Segment
 
 ```http
-GET /api/video/<int:movie_id>/<str:resolution>/<str:segment>/
+GET /api/video/<movie_id>/<resolution>/<segment>/
 ```
 
-Returns an individual HLS video segment for the requested movie and resolution.
-
-### URL Parameters
-
-| Parameter | Description |
-|---|---|
-| `movie_id` | ID of the movie |
-| `resolution` | Requested resolution |
-| `segment` | Segment filename |
-
-### Example
+Example:
 
 ```http
-GET /api/video/3/480p/index0.ts
+GET /api/video/1/480p/index0.ts
 ```
 
-### Authentication
-
-JWT authentication is required.
-
-### Success Response
+Expected response:
 
 ```text
 200 OK
@@ -1389,33 +989,21 @@ Content type:
 video/MP2T
 ```
 
-The response body contains binary MPEG transport stream video data.
-
-Because this is binary data, Postman may not display readable content in the response body.
-
-A `200 OK` response together with `Content-Type: video/MP2T` confirms that the segment was returned successfully.
-
-### Error Response
-
-```text
-404 Not Found
-```
-
-Returned if the requested video or segment does not exist.
+Authentication is required.
 
 ---
 
 # HLS Streaming
 
-HLS streaming works by first requesting a playlist.
+HLS streaming works by requesting a playlist first.
 
 Example:
 
 ```http
-GET /api/video/3/480p/index.m3u8
+GET /api/video/1/480p/index.m3u8
 ```
 
-The playlist contains references to one or more video segments.
+The playlist references one or more `.ts` video segments.
 
 For example:
 
@@ -1423,157 +1011,114 @@ For example:
 index0.ts
 ```
 
-The client then requests the segment:
+The client then requests:
 
 ```http
-GET /api/video/3/480p/index0.ts
+GET /api/video/1/480p/index0.ts
 ```
 
-For longer videos, the player requests additional segments as playback continues.
+The video player continues requesting segments during playback.
 
-This means the client does not need to download the entire source video before playback can begin.
+This allows the frontend to stream the video instead of downloading the complete source video before playback starts.
 
 ---
 
-# Testing with Postman
+# Frontend Integration
 
-A recommended API testing sequence is:
+The Academy frontend is used as the client for the backend.
 
-```text
-1. Register user
-       ↓
-2. Login
-       ↓
-3. Obtain/use access token
-       ↓
-4. Request video list
-       ↓
-5. Request HLS manifest
-       ↓
-6. Request HLS segment
-       ↓
-7. Test 404 responses
+The frontend API configuration is:
+
+```javascript
+const API_BASE_URL = 'http://127.0.0.1:8000/api/';
 ```
 
-## Authentication in Postman
+Relevant frontend endpoints include:
 
-Open the request.
-
-Select:
-
-```text
-Authorization
+```javascript
+const LOGIN_URL = 'login/';
+const REGISTER_URL = 'register/';
+const FORGET_PASSWORD_URL = 'password_reset/';
+const REFRESH_URL = 'token/refresh/';
 ```
 
-Choose:
+The frontend also constructs HLS URLs for individual videos and resolutions.
+
+The frontend must be served through a local HTTP server.
+
+Example:
 
 ```text
-Bearer Token
+http://127.0.0.1:5500/
 ```
 
-Insert the current access token.
-
-Do not manually insert only:
-
-```text
-eyJ...
-```
-
-into an `Authorization` header without the `Bearer` prefix.
-
-If using the Headers tab manually, the format must be:
-
-```text
-Authorization: Bearer <ACCESS_TOKEN>
-```
+Do not open the HTML files directly using `file://`.
 
 ---
 
-# Testing the HLS Endpoints
+# CORS
 
-Assume:
+The backend allows requests from the local frontend development server.
 
-```text
-movie_id = 3
-resolution = 480p
-```
-
-## Manifest Success Test
-
-Request:
-
-```http
-GET http://127.0.0.1:8000/api/video/3/480p/index.m3u8
-```
-
-Expected:
+Example origins:
 
 ```text
-200 OK
+http://127.0.0.1:5500
+http://localhost:5500
 ```
 
-Content type:
+Credentials are enabled because authentication uses cookies.
+
+```python
+CORS_ALLOW_CREDENTIALS = True
+```
+
+If the frontend runs on another origin, that origin must be added to the backend CORS configuration.
+
+---
+
+# Static and Media Files
+
+Static files are configured with:
+
+```python
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "static"
+```
+
+Media files are configured with:
+
+```python
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+```
+
+WhiteNoise is used for static file handling.
+
+The backend therefore includes:
 
 ```text
-application/vnd.apple.mpegurl
+whitenoise
 ```
 
-## Manifest 404 Test
+in its Python dependencies.
 
-Use a movie ID or manifest that does not exist.
+Static files can be collected with:
 
-Expected:
-
-```text
-404 Not Found
-```
-
-## Segment Success Test
-
-Request:
-
-```http
-GET http://127.0.0.1:8000/api/video/3/480p/index0.ts
-```
-
-Expected:
-
-```text
-200 OK
-```
-
-Content type:
-
-```text
-video/MP2T
-```
-
-Postman may display an empty/unreadable body because the response contains binary video data.
-
-## Segment 404 Test
-
-Request a segment that does not exist:
-
-```http
-GET http://127.0.0.1:8000/api/video/3/480p/fake.ts
-```
-
-Expected:
-
-```text
-404 Not Found
+```powershell
+docker compose exec web python manage.py collectstatic --noinput
 ```
 
 ---
 
-# Django Checks and Tests
+# Testing
 
-## System Check
+## Django System Check
 
 Run:
 
-```bash
-python manage.py check
+```powershell
+docker compose exec web python manage.py check
 ```
 
 Expected:
@@ -1582,283 +1127,49 @@ Expected:
 System check identified no issues (0 silenced).
 ```
 
-## Migrations
-
-Check migrations:
-
-```bash
-python manage.py showmigrations
-```
-
-Apply migrations:
-
-```bash
-python manage.py migrate
-```
+---
 
 ## Django Tests
 
 Run:
 
-```bash
-python manage.py test
-```
-
----
-
-# Generated Files
-
-Video processing creates local/generated files.
-
-These should not be committed to Git.
-
-The `.gitignore` should exclude:
-
-```gitignore
-# Environment
-.env
-.env.*
-
-# Python
-**pycache**/
-*.py[cod]
-*$py.class
-
-# Virtual environment
-venv/
-.venv/
-env/
-
-# Django
-*.log
-db.sqlite3
-media/
-staticfiles/
-
-# IDE
-.vscode/
-.idea/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Local video processing output
-hls/
-thumbnails/
-videos/*.mp4
-```
-
-## Important `.env.example` Note
-
-If `.gitignore` contains:
-
-```gitignore
-.env.*
-```
-
-then `.env.example` also matches this pattern.
-
-If `.env.example` should be tracked by Git, add this exception after the `.env.*` rule:
-
-```gitignore
-!.env.example
-```
-
-The environment section should therefore preferably be:
-
-```gitignore
-# Environment
-.env
-.env.*
-!.env.example
-```
-
-Then check:
-
-```bash
-git status
-```
-
-The `.env.example` file should be trackable, while `.env` remains ignored.
-
----
-
-# Troubleshooting
-
-## `ModuleNotFoundError: No module named 'django_rq'`
-
-This commonly happens when Django is started without the project's virtual environment.
-
-Activate it first.
-
-### Windows
-
 ```powershell
-venv\Scripts\activate
+docker compose exec web python manage.py test
 ```
 
-Then:
-
-```bash
-pip install -r requirements.txt
-```
-
-Verify:
-
-```bash
-pip show django-rq
-```
-
-Then:
-
-```bash
-python manage.py check
-```
-
----
-
-## PostgreSQL Connection Refused
-
-Example error:
+If no test modules have been created yet, Django may report:
 
 ```text
-connection to server at "localhost", port 5432 failed
+Found 0 test(s).
 ```
 
-First make sure Docker Desktop is running.
-
-Check:
-
-```bash
-docker ps
-```
-
-If the containers are not running:
-
-```bash
-docker compose up -d
-```
-
-Check again:
-
-```bash
-docker compose ps
-```
-
-Then:
-
-```bash
-python manage.py migrate
-```
+This means no tests were discovered; it is not itself a failing test.
 
 ---
 
-## Redis Connection Refused
+# API Testing with Postman
 
-Check the Redis container:
-
-```bash
-docker ps
-```
-
-The container should include:
+A recommended testing sequence is:
 
 ```text
-videoflix_redis
+1. Register
+       ↓
+2. Login
+       ↓
+3. Obtain authentication
+       ↓
+4. Request video list
+       ↓
+5. Request HLS manifest
+       ↓
+6. Request HLS segment
+       ↓
+7. Test invalid requests
 ```
 
-If it is missing:
+For authenticated API requests, use the access token.
 
-```bash
-docker compose up -d
-```
-
-Verify the `.env` value:
-
-```env
-REDIS_URL=redis://localhost:6379/1
-```
-
----
-
-## Django Cannot Resolve Host `db`
-
-If Django runs locally and you receive a hostname error for:
-
-```text
-db
-```
-
-check `.env`.
-
-For the local setup documented here, use:
-
-```env
-POSTGRES_HOST=localhost
-```
-
-The hostname:
-
-```text
-db
-```
-
-is the Docker Compose service name and is intended for applications running inside the Docker network.
-
----
-
-## Django Cannot Resolve Host `redis`
-
-For local Django, use:
-
-```env
-REDIS_URL=redis://localhost:6379/1
-```
-
-not:
-
-```env
-REDIS_URL=redis://redis:6379/1
-```
-
-The hostname `redis` is available inside the Docker Compose network.
-
----
-
-## FFmpeg Not Found
-
-Run:
-
-```bash
-ffmpeg -version
-```
-
-If the command is not found, install FFmpeg and make sure its executable directory is available through the operating system PATH.
-
-After changing PATH on Windows, restart PowerShell or VS Code.
-
----
-
-## RQ Worker Error on Windows
-
-A Windows RQ worker may produce:
-
-```text
-AttributeError: module 'os' has no attribute 'wait4'
-```
-
-This is related to RQ worker process handling on Windows.
-
-The Django application and Redis queue configuration can still work, but reliable RQ background workers should be run in a Linux-compatible environment.
-
----
-
-## `401 Unauthorized`
-
-Make sure a valid access token is being used.
-
-In Postman:
+Example:
 
 ```text
 Authorization
@@ -1866,145 +1177,338 @@ Authorization
 → <ACCESS_TOKEN>
 ```
 
-Access tokens expire after 30 minutes according to the current project settings.
-
-If the token has expired, obtain a new access token.
-
 ---
 
-## HLS Manifest Returns 404
+# HLS Testing
 
-Check that:
+## Manifest Success
 
-1. The video exists.
-2. The video has been processed.
-3. The requested resolution exists.
-4. The generated `index.m3u8` exists.
-
-Example:
-
-```text
-hls/3/480p/index.m3u8
+```http
+GET /api/video/1/480p/index.m3u8
 ```
 
----
-
-## HLS Segment Returns 404
-
-Check the generated HLS directory.
-
-Example:
-
-```text
-hls/3/480p/
-```
-
-Verify the actual segment filename.
-
-For example:
-
-```text
-index0.ts
-```
-
-Then request exactly that filename.
-
----
-
-## Postman Shows Nothing for the `.ts` Response
-
-This is expected.
-
-The HLS segment endpoint returns binary video data:
-
-```text
-Content-Type: video/MP2T
-```
-
-Postman does not display binary MPEG transport stream data as readable JSON or text.
-
-Check:
+Expected:
 
 ```text
 200 OK
 ```
 
-and the response content type/size instead.
+---
+
+## Manifest 404
+
+Request a non-existing video or resolution.
+
+Expected:
+
+```text
+404 Not Found
+```
 
 ---
 
-# Clean Setup from Scratch
+## Segment Success
 
-This is the complete quick-start sequence for a new developer.
-
-## Windows PowerShell
-
-```powershell
-git clone <YOUR_REPOSITORY_URL>
-
-cd videoflix
-cd backend
-
-python -m venv venv
-
-venv\Scripts\activate
-
-pip install -r requirements.txt
-
-Copy-Item .env.example .env
+```http
+GET /api/video/1/480p/index0.ts
 ```
 
-Now edit `.env` and configure:
+Expected:
 
-```env
-POSTGRES_DB=videoflix
-POSTGRES_USER=videoflix
-POSTGRES_PASSWORD=your-secure-password
+```text
+200 OK
+```
 
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
+---
 
-REDIS_URL=redis://localhost:6379/1
+## Segment 404
 
-SECRET_KEY=your-django-secret-key
-DEBUG=True
+```http
+GET /api/video/1/480p/fake.ts
+```
+
+Expected:
+
+```text
+404 Not Found
+```
+
+---
+
+# Generated Files
+
+Generated files should not be committed to Git.
+
+The `.gitignore` should exclude:
+
+```gitignore
+.env
+.venv/
+venv/
+
+__pycache__/
+*.py[cod]
+
+*.log
+
+media/
+static/
+
+hls/
+thumbnails/
+
+*.mp4
+
+.vscode/
+.idea/
+
+.DS_Store
+Thumbs.db
+```
+
+The real `.env` file must never be committed.
+
+The `.env.template` file should be committed.
+
+---
+
+# Troubleshooting
+
+## Pillow is not installed
+
+If Django reports:
+
+```text
+Cannot use ImageField because Pillow is not installed.
+```
+
+Install Pillow:
+
+```powershell
+python -m pip install Pillow
+```
+
+Then verify:
+
+```powershell
+python -m pip show Pillow
+```
+
+For Docker, rebuild the image:
+
+```powershell
+docker compose up --build -d
+```
+
+---
+
+## Docker container does not start
+
+Check:
+
+```powershell
+docker compose ps
+```
+
+Then inspect the backend:
+
+```powershell
+docker compose logs web
+```
+
+If the Docker image has changed, rebuild:
+
+```powershell
+docker compose up --build -d
+```
+
+---
+
+## `backend.entrypoint.sh: no such file or directory`
+
+This usually indicates that the Docker image cannot find or execute the configured entrypoint.
+
+Check:
+
+- the file exists
+- the path in the Dockerfile is correct
+- the file has the correct line endings
+- the image is rebuilt after changes
+
+Then:
+
+```powershell
+docker compose build web
+docker compose up -d
+```
+
+---
+
+## PostgreSQL connection error
+
+Check:
+
+```powershell
+docker compose ps
+```
+
+Make sure the database container is running.
+
+Then:
+
+```powershell
+docker compose logs db
+```
+
+---
+
+## Redis connection error
+
+Check:
+
+```powershell
+docker compose ps
 ```
 
 Then:
 
 ```powershell
-docker compose up -d
-
-docker ps
-
-python manage.py migrate
-
-python manage.py createsuperuser
-
-python manage.py check
-
-ffmpeg -version
-
-python manage.py runserver
+docker compose logs redis
 ```
 
-Open:
+---
 
-```text
-http://127.0.0.1:8000/admin/
-```
+## Static files return 404
 
-For background processing, open another terminal:
+Run:
 
 ```powershell
-cd videoflix\backend
-
-venv\Scripts\activate
-
-python manage.py rqworker default
+docker compose exec web python manage.py collectstatic --noinput
 ```
 
-> On Windows, see the RQ worker limitation described in the troubleshooting section.
+Then rebuild/restart if necessary:
+
+```powershell
+docker compose up --build -d
+```
+
+Check the backend logs:
+
+```powershell
+docker compose logs web
+```
+
+---
+
+## Video does not appear
+
+Check:
+
+```text
+1. User is logged in
+2. Video exists in Django Admin
+3. GET /api/video/ works
+4. Video processing completed
+5. HLS files exist
+```
+
+Check generated HLS files:
+
+```powershell
+docker compose exec web ls -R /app/media/hls
+```
+
+A processed video should contain:
+
+```text
+480p/
+720p/
+1080p/
+```
+
+---
+
+## HLS manifest returns 404
+
+Check:
+
+```text
+1. The video exists.
+2. The video has been processed.
+3. The requested resolution exists.
+4. index.m3u8 exists.
+```
+
+Example:
+
+```text
+media/
+└── hls/
+    └── 1/
+        └── 480p/
+            └── index.m3u8
+```
+
+Also verify the API URL:
+
+```text
+/api/video/1/480p/index.m3u8
+```
+
+---
+
+## HLS segment returns 404
+
+Check the generated directory:
+
+```text
+media/
+└── hls/
+    └── 1/
+        └── 480p/
+            ├── index.m3u8
+            └── index0.ts
+```
+
+Request the exact segment filename.
+
+---
+
+## Video processing does not start
+
+Check the backend logs:
+
+```powershell
+docker compose logs -f web
+```
+
+Look for:
+
+```text
+RQ
+process_video
+FFmpeg
+```
+
+Also check that Redis is running:
+
+```powershell
+docker compose ps
+```
+
+---
+
+## FFmpeg not found
+
+Run:
+
+```powershell
+ffmpeg -version
+```
+
+If the command is not recognized, install FFmpeg and add its `bin` directory to the system `PATH`.
+
+Restart PowerShell after changing the PATH.
 
 ---
 
@@ -2013,55 +1517,190 @@ python manage.py rqworker default
 A clean development workflow is:
 
 ```text
-Create / activate virtual environment
-              ↓
-Start Docker services
-              ↓
-PostgreSQL + Redis running
-              ↓
-Start Django
-              ↓
-Start RQ worker where supported
-              ↓
-Implement feature
-              ↓
+Start Docker
+      ↓
+PostgreSQL + Redis
+      ↓
+Start / rebuild web container
+      ↓
+Django available on port 8000
+      ↓
+Start Academy frontend
+      ↓
+Login / register
+      ↓
+Upload test video through Admin
+      ↓
+RQ job
+      ↓
+FFmpeg
+      ↓
+HLS generation
+      ↓
+Test frontend playback
+      ↓
 python manage.py check
-              ↓
-Test API with Postman
-              ↓
-Test success case
-              ↓
-Test error case
-              ↓
+      ↓
+python manage.py test
+      ↓
 git status
-              ↓
+      ↓
 git add
-              ↓
+      ↓
 git commit
-              ↓
+      ↓
 git push
 ```
 
 Useful commands:
 
-```bash
+```powershell
 docker compose up -d
 ```
 
-```bash
-python manage.py check
+```powershell
+docker compose up --build -d
 ```
 
-```bash
-python manage.py runserver
+```powershell
+docker compose ps
 ```
 
-```bash
-python manage.py test
+```powershell
+docker compose logs web --tail=100
 ```
 
-```bash
+```powershell
+docker compose exec web python manage.py check
+```
+
+```powershell
+docker compose exec web python manage.py test
+```
+
+```powershell
 git status
+```
+
+---
+
+# Clean Setup from Scratch
+
+For a new developer:
+
+```powershell
+git clone <YOUR_REPOSITORY_URL>
+
+cd videoflix
+
+cd backend
+
+Copy-Item .env.template .env
+```
+
+Configure `.env`.
+
+Then:
+
+```powershell
+docker compose up --build -d
+```
+
+Apply migrations:
+
+```powershell
+docker compose exec web python manage.py migrate
+```
+
+Create the admin user:
+
+```powershell
+docker compose exec web python manage.py createsuperuser
+```
+
+Check Django:
+
+```powershell
+docker compose exec web python manage.py check
+```
+
+Check services:
+
+```powershell
+docker compose ps
+```
+
+Start the Academy frontend separately with its local static server.
+
+Open:
+
+```text
+http://127.0.0.1:5500/
+```
+
+Django Admin:
+
+```text
+http://127.0.0.1:8000/admin/
+```
+
+API:
+
+```text
+http://127.0.0.1:8000/api/
+```
+
+---
+
+# Final System Overview
+
+The finished Videoflix system works as follows:
+
+```text
+                    ┌──────────────────┐
+                    │ Academy Frontend │
+                    │ localhost:5500   │
+                    └────────┬─────────┘
+                             │
+                             │ HTTP / JSON / HLS
+                             ▼
+                  ┌─────────────────────┐
+                  │ Django + DRF       │
+                  │ Gunicorn / Docker  │
+                  │ :8000              │
+                  └──────┬──────┬──────┘
+                         │      │
+              ┌──────────┘      └──────────┐
+              ▼                            ▼
+      ┌──────────────┐              ┌──────────────┐
+      │ PostgreSQL   │              │ Redis        │
+      │              │              │              │
+      │ Users        │              │ Django RQ    │
+      │ Videos       │              │ Queue        │
+      └──────────────┘              └──────┬───────┘
+                                           │
+                                           ▼
+                                    ┌──────────────┐
+                                    │ FFmpeg       │
+                                    │              │
+                                    │ 480p         │
+                                    │ 720p         │
+                                    │ 1080p        │
+                                    └──────┬───────┘
+                                           │
+                                           ▼
+                                    ┌──────────────┐
+                                    │ HLS          │
+                                    │              │
+                                    │ index.m3u8   │
+                                    │ index0.ts    │
+                                    └──────┬───────┘
+                                           │
+                                           ▼
+                                    Streaming API
+                                           │
+                                           ▼
+                                    Academy Frontend
 ```
 
 ---
