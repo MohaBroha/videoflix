@@ -1,6 +1,8 @@
 # Environment
 .env
 .env.*
+!.env.template
+
 
 # Python
 __pycache__/
@@ -11,7 +13,6 @@ __pycache__/
 venv/
 .venv/
 env/
-!.env.example
 
 # Django
 *.log
