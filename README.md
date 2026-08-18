@@ -34,6 +34,7 @@ Videos are uploaded through the Django Admin Panel. After a video is created, a 
   - [2. Open the Backend Directory](#2-open-the-backend-directory)
   - [3. Configure Environment Variables](#3-configure-environment-variables)
   - [4. Start Docker](#4-start-docker)
+  - [Entrypoint Permissions](#entrypoint-permissions)
   - [5. Build and Start the Application](#5-build-and-start-the-application)
   - [6. Apply Database Migrations](#6-apply-database-migrations)
   - [7. Create a Superuser](#7-create-a-superuser)
@@ -508,6 +509,16 @@ Check:
 
 ```powershell
 docker ps
+```
+
+---
+
+## Entrypoint Permissions
+
+Make sure the backend entrypoint script has execution permissions:
+
+```bash
+chmod +x backend.entrypoint.sh
 ```
 
 ---
