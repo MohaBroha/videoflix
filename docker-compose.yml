@@ -2,7 +2,6 @@ services:
 
   db:
     image: postgres:latest
-    container_name: videoflix_database
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
@@ -12,7 +11,6 @@ services:
 
   redis:
     image: redis:latest
-    container_name: videoflix_redis
     volumes:
       - redis_data:/data
 
@@ -21,7 +19,6 @@ services:
       context: .
       dockerfile: backend.Dockerfile
     env_file: .env
-    container_name: videoflix_backend
 
     volumes:
       - .:/app
