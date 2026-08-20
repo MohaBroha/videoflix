@@ -37,12 +37,10 @@ def activate_user(uidb64, token):
 def send_activation_email(user, uidb64, token):
     """Send the account activation email to the provided user."""
 
-    activation_path = reverse(
-        "activate",
-        kwargs={"uidb64": uidb64, "token": token},
+    activation_url = (
+        f"{settings.FRONTEND_URL}"
+        f"/pages/auth/activate.html?uid={uidb64}&token={token}"
     )
-
-    activation_url = f"http://127.0.0.1:8000{activation_path}"
 
     send_mail(
         subject="Activate your Videoflix account",
@@ -60,12 +58,10 @@ def send_activation_email(user, uidb64, token):
 def send_password_reset_email(user, uidb64, token):
     """Send a password reset email to the provided user."""
 
-    reset_path = reverse(
-        "password_confirm",
-        kwargs={"uidb64": uidb64, "token": token},
+    reset_url = (
+        f"{settings.FRONTEND_URL}"
+        f"/pages/auth/confirm_password.html?uid={uidb64}&token={token}"
     )
-
-    reset_url = f"http://127.0.0.1:8000{reset_path}"
 
     send_mail(
         subject="Reset your Videoflix password",
