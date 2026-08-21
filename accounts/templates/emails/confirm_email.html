@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm your email</title>
+</head>
+
+<body style="margin: 0; padding: 0; background-color: #ffffff; font-family: Arial, Helvetica, sans-serif; color: #555555;">
+
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+    <tr>
+        <td align="center" style="padding: 40px 20px;">
+
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                   style="max-width: 900px;">
+
+                <!-- Logo -->
+                <tr>
+                    <td align="center" style="padding-bottom: 55px;">
+                        <img
+                            src="cid:videoflix-logo"
+                            alt="Videoflix"
+                            width="240"
+                            style="display: block; width: 240px; height: auto; border: 0;"
+                        >
+                    </td>
+                </tr>
+
+                <!-- Greeting -->
+                <tr>
+                    <td style="font-size: 16px; line-height: 1.5; padding-bottom: 10px;">
+                        Dear {{ user.email }},
+                    </td>
+                </tr>
+
+                <!-- Text -->
+                <tr>
+                    <td style="font-size: 16px; line-height: 1.5; padding-bottom: 25px;">
+                        Thank you for registering with
+                        <strong style="color: #4f00ff;">Videoflix</strong>.
+                        To complete your registration and verify your email address,
+                        please click the link below:
+                    </td>
+                </tr>
+
+                <!-- Button -->
+                <tr>
+                    <td style="padding-bottom: 30px;">
+                        <a
+                            href="{{ activation_url }}"
+                            style="
+                                display: inline-block;
+                                padding: 13px 24px;
+                                background-color: #4f00ff;
+                                color: #ffffff;
+                                text-decoration: none;
+                                border-radius: 24px;
+                                font-size: 16px;
+                                font-weight: bold;
+                            "
+                        >
+                            Activate account
+                        </a>
+                    </td>
+                </tr>
+
+                <!-- Security note -->
+                <tr>
+                    <td style="font-size: 16px; line-height: 1.5; padding-bottom: 30px;">
+                        If you did not create an account with us, please disregard this email.
+                    </td>
+                </tr>
+
+                <!-- Closing -->
+                <tr>
+                    <td style="font-size: 16px; line-height: 1.5;">
+                        Best regards,
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="font-size: 16px; line-height: 1.5; padding-top: 25px;">
+                        Your Videoflix Team.
+                    </td>
+                </tr>
+
+            </table>
+
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>
