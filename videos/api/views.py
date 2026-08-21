@@ -19,8 +19,11 @@ class VideoListView(APIView):
         """Fetch all videos and serialize them for the client."""
 
         videos = Video.objects.all()
-        serializer = VideoSerializer(videos, many=True)
-
+        serializer = VideoSerializer(
+            videos,
+            many=True,
+            context={"request": request},
+        )
         return Response(serializer.data)
 
 
