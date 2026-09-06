@@ -18,7 +18,7 @@ class VideoListView(APIView):
     def get(self, request):
         """Fetch all videos and serialize them for the client."""
 
-        videos = Video.objects.all()
+        videos = Video.objects.order_by("title")
         serializer = VideoSerializer(
             videos,
             many=True,
